@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Manual Digital Docente</title>
+  <rect width="64" height="64" rx="14" fill="#07111f"/>
+  <path d="M14 18c0-3.314 2.686-6 6-6h30v36H20c-3.314 0-6-2.686-6-6V18z" fill="#f8fafc"/>
+  <path d="M20 12h30v8H20a6 6 0 0 0-6 6v-8c0-3.314 2.686-6 6-6z" fill="#0ea5e9"/>
+  <path d="M21 25h22M21 32h18M21 39h13" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M43 45l5 5 9-13" fill="none" stroke="#10b981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M50 12v22" stroke="#38bdf8" stroke-width="4"/>
+</svg>
