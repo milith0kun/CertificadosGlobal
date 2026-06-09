@@ -13,7 +13,7 @@ export async function POST(request) {
     await connectDB();
 
     let doc, nombreArchivo, templateId, datosReemplazo;
-    const folderDestino = '1LnYfUDvT8y6pJMrxMP0bKF0Zy5o5XYcR'; // Por defecto una carpeta de Drive
+    const folderDestino = '1yHUepgZklBvh121CP07zKTp0qXdKNN8v'; // Carpeta principal de Drive
 
     if (type === 'estudiante') {
       doc = await Certificate.findById(certificateId).lean();
