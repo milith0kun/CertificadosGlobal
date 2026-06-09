@@ -1,0 +1,22 @@
+import { connectDB } from '@/lib/mongodb';
+import Certificate from '@/models/Certificate';
+import TeacherAssignment from '@/models/TeacherAssignment';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(request, { params }) {
+  const { codigo } = await params;
+  
+  await connectDB();
+  
+  let doc = await Certificate.findOne({ codigoCertificado: codigo }).lean();
+  if (!doc) {
+    doc = await TeacherAssignment.findOne({ codigoContrato: codigo }).lean();
+  }
+
+  if (doc && doc.pdfUrl) {
+    return Response.redirect(doc.pdfUrl);
+  }
+
+  return new Response('PDF no encontrado o no ha sido generado.', { status: 404 });
+}

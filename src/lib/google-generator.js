@@ -82,10 +82,43 @@ export async function generarCertificadoGoogle(datos, templateId, destinationFol
     
     console.log('PDF generado exitosamente en memoria.');
 
-    // 6. Eliminar el archivo temporal de Slides
+    // 6. Subir el PDF a Google Drive para que sea público
+    const stream = require('stream');
+    const bufferStream = new stream.PassThrough();
+    bufferStream.end(pdfBuffer);
+
+    const uploadRes = await drive.files.create({
+      requestBody: {
+        name: `${nombreArchivo}.pdf`,
+        parents: [destinationFolderId],
+        mimeType: 'application/pdf'
+      },
+      media: {
+        mimeType: 'application/pdf',
+        body: bufferStream
+      }
+    });
+
+    const finalPdfId = uploadRes.data.id;
+
+    // Hacerlo público
+    await drive.permissions.create({
+      fileId: finalPdfId,
+      requestBody: { role: 'reader', type: 'anyone' }
+    });
+
+    const fileMeta = await drive.files.get({
+      fileId: finalPdfId,
+      fields: 'webViewLink'
+    });
+
+    const pdfUrl = fileMeta.data.webViewLink;
+    console.log('PDF Público en:', pdfUrl);
+
+    // 7. Eliminar el archivo temporal de Slides
     await drive.files.delete({ fileId: newFileId });
 
-    return pdfBuffer;
+    return { buffer: pdfBuffer, pdfUrl };
   } catch (error) {
     console.error('Error en generarCertificadoGoogle:', error);
     throw error;

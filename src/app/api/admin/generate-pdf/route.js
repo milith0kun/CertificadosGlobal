@@ -16,7 +16,7 @@ export async function POST(request) {
     const folderDestino = '1yHUepgZklBvh121CP07zKTp0qXdKNN8v'; // Carpeta principal de Drive
 
     if (type === 'estudiante') {
-      doc = await Certificate.findById(certificateId).lean();
+      doc = await Certificate.findById(certificateId);
       if (!doc) return Response.json({ error: 'No encontrado' }, { status: 404 });
       
       templateId = '1YJiolK2rZS6X-qxMfoBaPkddk_b-c7wsVI8ymOedpys'; // Plantilla CIIP General
@@ -25,7 +25,7 @@ export async function POST(request) {
         NOMBRE: doc.datosPersona?.nombreCompleto || 'SIN NOMBRE',
         PROGRAMA: doc.datosCursoPrograma?.nombre || 'SIN PROGRAMA',
         FECHA: new Date().toLocaleDateString('es-PE'),
-        QR: `https://certificaciones.ecosdelseo.com/validar-certificado/${doc.codigoCertificado}`
+        QR: `https://certificaciones.ecosdelseo.com/api/public/certificates/${doc.codigoCertificado}/pdf`
       };
     } else {
       doc = await TeacherAssignment.findById(certificateId).lean();
@@ -47,9 +47,18 @@ export async function POST(request) {
     }
 
     // Ejecutar generación con Google Slides
-    const pdfBuffer = await generarCertificadoGoogle(datosReemplazo, templateId, folderDestino, nombreArchivo);
+    const result = await generarCertificadoGoogle(datosReemplazo, templateId, folderDestino, nombreArchivo);
 
-    return new Response(pdfBuffer, {
+    // Guardar pdfUrl en BD
+    if (type === 'estudiante' && doc.save) {
+      doc.pdfUrl = result.pdfUrl;
+      await doc.save();
+    } else if (type !== 'estudiante') {
+      const Model = (await import('@/models/TeacherAssignment')).default;
+      await Model.findByIdAndUpdate(certificateId, { pdfUrl: result.pdfUrl });
+    }
+
+    return new Response(result.buffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

@@ -1,0 +1,5 @@
+ValidationError: productId: Path `productId` is required., userId: Path `userId` is required.\nValidationError: Certificate validation failed: productId: Path `productId` is required., userId: Path `userId` is required.
+    at Document.invalidate (/root/Proyectos/CertificadosGlobal/node_modules/mongoose/lib/document.js:3381:32)
+    at /root/Proyectos/CertificadosGlobal/node_modules/mongoose/lib/document.js:3142:17
+    at /root/Proyectos/CertificadosGlobal/node_modules/mongoose/lib/schemaType.js:1443:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
