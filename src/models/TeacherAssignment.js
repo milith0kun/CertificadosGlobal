@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 
 const TeacherAssignmentSchema = new mongoose.Schema({
-  teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+  teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', default: null },
   rolDocente: {
     type: String,
     enum: ['Expositor', 'Ponente', 'Capacitador', 'Instructor', 'Docente Especialista', 'Facilitador'],
-    required: true,
+    default: 'Expositor',
   },
   fechaInicio: { type: Date },
   fechaFin: { type: Date },
