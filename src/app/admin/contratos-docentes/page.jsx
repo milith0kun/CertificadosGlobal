@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import StatusBadge from '@/components/ui/StatusBadge';
 import SearchBar from '@/components/ui/SearchBar';
@@ -54,7 +55,11 @@ export default function ContratosDocentesPage() {
           <p className="page-kicker">Gestión</p>
           <h1 className="page-title">Contratos Docentes</h1>
         </div>
-        <Button size="sm">+ Generar Contrato</Button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link href="/admin/contratos-docentes/create">
+            <Button size="sm">+ Emitir Contrato</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="filters-row">

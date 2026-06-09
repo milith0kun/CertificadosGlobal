@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import StatusBadge from '@/components/ui/StatusBadge';
 import SearchBar from '@/components/ui/SearchBar';
@@ -57,7 +58,9 @@ export default function CertificadosEstudiantesPage() {
           <h1 className="page-title">Certificados de Estudiantes</h1>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Button size="sm">+ Emitir Certificado</Button>
+          <Link href="/admin/certificados-estudiantes/create">
+            <Button size="sm">+ Emitir Certificado</Button>
+          </Link>
           <Button size="sm" variant="outline">📦 Emisión Masiva</Button>
         </div>
       </div>

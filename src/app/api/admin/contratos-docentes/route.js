@@ -1,5 +1,5 @@
 import { connectDB } from '@/lib/mongodb';
-import TeacherContract from '@/models/TeacherContract';
+import TeacherAssignment from '@/models/TeacherAssignment';
 import { requireRole } from '@/lib/middleware';
 
 export async function GET() {
@@ -8,13 +8,30 @@ export async function GET() {
     if (error) return error;
 
     await connectDB();
-    const contracts = await TeacherContract.find()
-      .sort({ createdAt: -1 })
-      .lean();
-
-    return Response.json(contracts);
+    const contratos = await TeacherAssignment.find().sort({ createdAt: -1 }).lean();
+    return Response.json(contratos);
   } catch (err) {
     console.error('Error fetching teacher contracts:', err);
+    return Response.json({ error: 'Error interno' }, { status: 500 });
+  }
+}
+
+export async function POST(request) {
+  try {
+    const { error } = await requireRole('admin', 'admin_academico', 'area_administrativa');
+    if (error) return error;
+
+    const data = await request.json();
+    await connectDB();
+    
+    // Asignar código único si es necesario
+    const { generateUniqueCode } = await import('@/lib/code-generator');
+    data.codigoContrato = generateUniqueCode('teacher_contract');
+    
+    const doc = await TeacherAssignment.create(data);
+    return Response.json(doc, { status: 201 });
+  } catch (err) {
+    console.error('Error creating teacher contract:', err);
     return Response.json({ error: 'Error interno' }, { status: 500 });
   }
 }

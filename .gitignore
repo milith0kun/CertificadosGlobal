@@ -39,3 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+\ngoogle-credentials.json
+\ngoogle-credentials.json\ngoogle-refresh-token.json\ncheck-db.js\ndebug-excel.cjs\nfix-products.js\nmigrate-data.js\ntest-generator.js\n
