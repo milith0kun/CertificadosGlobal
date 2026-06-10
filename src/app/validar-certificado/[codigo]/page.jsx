@@ -55,6 +55,21 @@ export default async function ValidarCertificadoPage({ params }) {
         .success-icon { width: 64px; height: 64px; background: #22c55e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1rem auto; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4); }
       `}</style>
       
+      {/* 1. PDF GIGANTE ARRIBA */}
+      {doc.pdfUrl && (
+        <Card className="verify-card" style={{ marginBottom: '1.5rem' }} padding="0">
+          <div style={{ background: '#0f172a', padding: '1rem', color: 'white', fontWeight: 600, fontSize: '1rem' }}>
+            Vista Previa del Documento Oficial
+          </div>
+          <iframe 
+            src={doc.pdfUrl.replace('/view?usp=drivesdk', '/preview')} 
+            style={{ width: '100%', height: '600px', border: 'none', background: '#f1f5f9' }}
+            allow="autoplay"
+          ></iframe>
+        </Card>
+      )}
+
+      {/* 2. METADATOS Y CHECK VERDE ABAJO */}
       <Card className="verify-card" padding="0">
         <div className="verify-header">
           <div className="success-icon">✓</div>
@@ -105,19 +120,6 @@ export default async function ValidarCertificadoPage({ params }) {
           </div>
         </div>
       </Card>
-      
-      {doc.pdfUrl && (
-        <Card className="verify-card" style={{ marginTop: '1.5rem' }} padding="0">
-          <div style={{ background: '#0f172a', padding: '1rem', color: 'white', fontWeight: 600, fontSize: '1rem' }}>
-            Vista Previa del Documento
-          </div>
-          <iframe 
-            src={doc.pdfUrl.replace('/view?usp=drivesdk', '/preview')} 
-            style={{ width: '100%', height: '600px', border: 'none', background: '#f1f5f9' }}
-            allow="autoplay"
-          ></iframe>
-        </Card>
-      )}
     </div>
   );
 }
