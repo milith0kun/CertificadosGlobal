@@ -43,7 +43,7 @@ export default async function ValidarCertificadoPage({ params }) {
   const modulo = doc.modulos && doc.modulos.length > 0 ? doc.modulos[0].nombre : null;
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', padding: '1rem' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', padding: '2rem 1rem' }}>
       <style>{`
         .verify-card { max-width: 600px; width: 100%; text-align: center; overflow: hidden; }
         .verify-header { background: #0c2844; padding: 2rem 1rem; color: white; }
@@ -105,6 +105,19 @@ export default async function ValidarCertificadoPage({ params }) {
           </div>
         </div>
       </Card>
+      
+      {doc.pdfUrl && (
+        <Card className="verify-card" style={{ marginTop: '1.5rem' }} padding="0">
+          <div style={{ background: '#0f172a', padding: '1rem', color: 'white', fontWeight: 600, fontSize: '1rem' }}>
+            Vista Previa del Documento
+          </div>
+          <iframe 
+            src={doc.pdfUrl.replace('/view?usp=drivesdk', '/preview')} 
+            style={{ width: '100%', height: '600px', border: 'none', background: '#f1f5f9' }}
+            allow="autoplay"
+          ></iframe>
+        </Card>
+      )}
     </div>
   );
 }

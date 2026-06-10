@@ -25,7 +25,7 @@ export async function POST(request) {
         NOMBRE: doc.datosPersona?.nombreCompleto || 'SIN NOMBRE',
         PROGRAMA: doc.datosCursoPrograma?.nombre || 'SIN PROGRAMA',
         FECHA: new Date().toLocaleDateString('es-PE'),
-        QR: `https://certificaciones.ecosdelseo.com/api/public/certificates/${doc.codigoCertificado}/pdf`
+        QR: `https://certificaciones.ecosdelseo.com/validar-certificado/${doc.codigoCertificado}`
       };
     } else {
       doc = await TeacherAssignment.findById(certificateId).lean();

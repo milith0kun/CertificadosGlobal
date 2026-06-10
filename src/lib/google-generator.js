@@ -83,8 +83,8 @@ export async function generarCertificadoGoogle(datos, templateId, destinationFol
     console.log('PDF generado exitosamente en memoria.');
 
     // 6. Subir el PDF a Google Drive para que sea público
-    const stream = require('stream');
-    const bufferStream = new stream.PassThrough();
+    const { PassThrough } = await import('stream');
+    const bufferStream = new PassThrough();
     bufferStream.end(pdfBuffer);
 
     const uploadRes = await drive.files.create({
