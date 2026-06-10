@@ -33,7 +33,7 @@ export default async function ValidarCertificadoPage({ params }) {
   const programa = doc.datosCursoPrograma?.nombre || 'Desconocido';
   const fecha = doc.fechaEmision || doc.createdAt;
   const estado = doc.estado;
-  const validationUrl = doc.validationUrl || generateValidationUrl(doc.codigoCertificado);
+  const validationUrl = generateValidationUrl(doc.codigoCertificado);
   const qrUrl = generateQrUrl(validationUrl, '');
 
   return (

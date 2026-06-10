@@ -20,8 +20,8 @@ export async function POST(request) {
       doc = await Certificate.findById(certificateId);
       if (!doc) return Response.json({ error: 'No encontrado' }, { status: 404 });
 
-      const validationUrl = doc.validationUrl || generateValidationUrl(doc.codigoCertificado);
-      const qrUrl = doc.qrUrl || generateQrUrl(validationUrl);
+      const validationUrl = generateValidationUrl(doc.codigoCertificado);
+      const qrUrl = generateQrUrl(validationUrl);
       
       templateId = '1YJiolK2rZS6X-qxMfoBaPkddk_b-c7wsVI8ymOedpys'; // Plantilla CIIP General
       nombreArchivo = `CERT_${doc.codigoCertificado}`;

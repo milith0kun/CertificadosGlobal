@@ -1,5 +1,39 @@
 import { drive, slides } from './google.js';
-import { generateQrUrl } from './code-generator.js';
+import { generateQRBuffer } from './qr-generator.js';
+
+async function uploadTemporaryQr(validationUrl, destinationFolderId) {
+  const qrBuffer = await generateQRBuffer(validationUrl);
+  if (!qrBuffer) {
+    throw new Error('No se pudo generar la imagen QR');
+  }
+
+  const { PassThrough } = await import('stream');
+  const bufferStream = new PassThrough();
+  bufferStream.end(qrBuffer);
+
+  const uploadRes = await drive.files.create({
+    requestBody: {
+      name: `QR_TEMP_${Date.now()}.png`,
+      parents: [destinationFolderId],
+      mimeType: 'image/png',
+    },
+    media: {
+      mimeType: 'image/png',
+      body: bufferStream,
+    },
+  });
+
+  const fileId = uploadRes.data.id;
+  await drive.permissions.create({
+    fileId,
+    requestBody: { role: 'reader', type: 'anyone' },
+  });
+
+  return {
+    fileId,
+    imageUrl: `https://drive.usercontent.google.com/download?id=${fileId}&export=download`,
+  };
+}
 
 export async function generarCertificadoGoogle(
   datos,
@@ -8,6 +42,9 @@ export async function generarCertificadoGoogle(
   nombreArchivo,
   { qrImageObjectId = null } = {}
 ) {
+  let newFileId = null;
+  let temporaryQrFileId = null;
+
   try {
     // 1. Clonar la plantilla
     console.log(`Clonando plantilla ${templateId}...`);
@@ -19,13 +56,15 @@ export async function generarCertificadoGoogle(
       },
     });
     
-    const newFileId = copyRes.data.id;
+    newFileId = copyRes.data.id;
     
     // 2. Preparar los reemplazos de texto
     const requests = [];
     for (const [key, value] of Object.entries(datos)) {
       if (key === 'QR') {
-        const qrImageUrl = generateQrUrl(value);
+        const temporaryQr = await uploadTemporaryQr(value, destinationFolderId);
+        temporaryQrFileId = temporaryQr.fileId;
+        const qrImageUrl = temporaryQr.imageUrl;
 
         // Algunas plantillas antiguas tienen un QR fijo en lugar de {{QR}}.
         if (qrImageObjectId) {
@@ -76,7 +115,11 @@ export async function generarCertificadoGoogle(
       requestBody: { requests },
     });
 
-    // 4. (Opcional) Aquí agregaremos luego el reemplazo de imágenes para firmas
+    // Slides ya copió la imagen dentro de la presentación.
+    if (temporaryQrFileId) {
+      await drive.files.delete({ fileId: temporaryQrFileId });
+      temporaryQrFileId = null;
+    }
 
     // 5. Exportar como PDF
     console.log(`Exportando a PDF...`);
@@ -129,10 +172,18 @@ export async function generarCertificadoGoogle(
 
     // 7. Eliminar el archivo temporal de Slides
     await drive.files.delete({ fileId: newFileId });
+    newFileId = null;
 
     return { buffer: pdfBuffer, pdfUrl };
   } catch (error) {
     console.error('Error en generarCertificadoGoogle:', error);
     throw error;
+  } finally {
+    if (temporaryQrFileId) {
+      await drive.files.delete({ fileId: temporaryQrFileId }).catch(() => {});
+    }
+    if (newFileId) {
+      await drive.files.delete({ fileId: newFileId }).catch(() => {});
+    }
   }
 }
