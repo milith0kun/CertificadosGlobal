@@ -1,6 +1,11 @@
 import { connectDB } from '@/lib/mongodb';
 import Certificate from '@/models/Certificate';
 import { requireRole } from '@/lib/middleware';
+import {
+  generateQrUrl,
+  generateUniqueCode,
+  generateValidationUrl,
+} from '@/lib/code-generator';
 
 export async function GET() {
   try {
@@ -27,11 +32,11 @@ export async function POST(request) {
     const data = await request.json();
     await connectDB();
     
-    // Add logic to generate unique code
-    const { generateUniqueCode } = await import('@/lib/code-generator');
     data.codigoCertificado = generateUniqueCode('student_certificate');
     data.tipoCertificado = 'student_certificate';
-    data.emitidoPorId = user._id;
+    data.emitidoPor = user.userId;
+    data.validationUrl = generateValidationUrl(data.codigoCertificado);
+    data.qrUrl = generateQrUrl(data.validationUrl);
 
     const cert = await Certificate.create(data);
     return Response.json(cert, { status: 201 });

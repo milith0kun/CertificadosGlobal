@@ -3,6 +3,7 @@ import Certificate from '@/models/Certificate';
 import TeacherAssignment from '@/models/TeacherAssignment';
 import { requireRole } from '@/lib/middleware';
 import { generarCertificadoGoogle } from '@/lib/google-generator';
+import { generateQrUrl, generateValidationUrl } from '@/lib/code-generator';
 
 export async function POST(request) {
   try {
@@ -18,6 +19,9 @@ export async function POST(request) {
     if (type === 'estudiante') {
       doc = await Certificate.findById(certificateId);
       if (!doc) return Response.json({ error: 'No encontrado' }, { status: 404 });
+
+      const validationUrl = doc.validationUrl || generateValidationUrl(doc.codigoCertificado);
+      const qrUrl = doc.qrUrl || generateQrUrl(validationUrl);
       
       templateId = '1YJiolK2rZS6X-qxMfoBaPkddk_b-c7wsVI8ymOedpys'; // Plantilla CIIP General
       nombreArchivo = `CERT_${doc.codigoCertificado}`;
@@ -25,8 +29,11 @@ export async function POST(request) {
         NOMBRE: doc.datosPersona?.nombreCompleto || 'SIN NOMBRE',
         PROGRAMA: doc.datosCursoPrograma?.nombre || 'SIN PROGRAMA',
         FECHA: new Date().toLocaleDateString('es-PE'),
-        QR: `https://certificaciones.ecosdelseo.com/validar-certificado/${doc.codigoCertificado}`
+        QR: validationUrl,
       };
+
+      doc.validationUrl = validationUrl;
+      doc.qrUrl = qrUrl;
     } else {
       doc = await TeacherAssignment.findById(certificateId).lean();
       if (!doc) return Response.json({ error: 'No encontrado' }, { status: 404 });
@@ -48,7 +55,15 @@ export async function POST(request) {
     }
 
     // Ejecutar generación con Google Slides
-    const result = await generarCertificadoGoogle(datosReemplazo, templateId, folderDestino, nombreArchivo);
+    const result = await generarCertificadoGoogle(
+      datosReemplazo,
+      templateId,
+      folderDestino,
+      nombreArchivo,
+      type === 'estudiante'
+        ? { qrImageObjectId: 'g3e049da2e67_0_27' }
+        : {}
+    );
 
     // Guardar pdfUrl en BD
     if (type === 'estudiante' && doc.save) {

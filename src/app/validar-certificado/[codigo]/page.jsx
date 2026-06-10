@@ -1,8 +1,9 @@
 import { connectDB } from '@/lib/mongodb';
 import Certificate from '@/models/Certificate';
-import TeacherAssignment from '@/models/TeacherAssignment';
 import StatusBadge from '@/components/ui/StatusBadge';
 import Card from '@/components/ui/Card';
+import { generateQrUrl, generateValidationUrl } from '@/lib/code-generator';
+import Image from 'next/image';
 
 // Optamos por no usar SSR estático forzado para que siempre esté actualizado,
 // pero usamos el caché de Next.js.
@@ -13,15 +14,7 @@ export default async function ValidarCertificadoPage({ params }) {
 
   await connectDB();
 
-  // Buscar en Certificados (Alumnos)
-  let doc = await Certificate.findOne({ codigoCertificado: codigo }).lean();
-  let tipo = 'estudiante';
-
-  // Si no está, buscar en Contratos/Asignaciones (Docentes)
-  if (!doc) {
-    doc = await TeacherAssignment.findOne({ codigoContrato: codigo }).lean();
-    tipo = 'docente';
-  }
+  const doc = await Certificate.findOne({ codigoCertificado: codigo }).lean();
 
   if (!doc) {
     return (
@@ -35,12 +28,13 @@ export default async function ValidarCertificadoPage({ params }) {
     );
   }
 
-  const isEstudiante = tipo === 'estudiante';
+  const isEstudiante = doc.tipoCertificado === 'student_certificate';
   const nombre = doc.datosPersona?.nombreCompleto || 'Desconocido';
   const programa = doc.datosCursoPrograma?.nombre || 'Desconocido';
   const fecha = doc.fechaEmision || doc.createdAt;
   const estado = doc.estado;
-  const modulo = doc.modulos && doc.modulos.length > 0 ? doc.modulos[0].nombre : null;
+  const validationUrl = doc.validationUrl || generateValidationUrl(doc.codigoCertificado);
+  const qrUrl = generateQrUrl(validationUrl, '');
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', padding: '2rem 1rem' }}>
@@ -53,6 +47,7 @@ export default async function ValidarCertificadoPage({ params }) {
         .data-item-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700; margin-bottom: 0.25rem; }
         .data-item-value { font-size: 1rem; color: #0f172a; font-weight: 600; }
         .success-icon { width: 64px; height: 64px; background: #22c55e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1rem auto; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4); }
+        .certificate-qr { width: 150px; height: 150px; display: block; margin: 1rem auto 0; border: 1px solid #e2e8f0; border-radius: 12px; }
       `}</style>
       
       {/* 1. PDF GIGANTE ARRIBA */}
@@ -86,6 +81,14 @@ export default async function ValidarCertificadoPage({ params }) {
             <div style={{ marginTop: '0.5rem' }}>
               <StatusBadge state={estado} />
             </div>
+            <Image
+              className="certificate-qr"
+              src={qrUrl}
+              alt={`QR de validación del certificado ${codigo}`}
+              width={150}
+              height={150}
+              unoptimized
+            />
           </div>
 
           <div style={{ height: '1px', background: '#e2e8f0', margin: '1.5rem 0' }}></div>
@@ -97,16 +100,16 @@ export default async function ValidarCertificadoPage({ params }) {
             </div>
             <div>
               <div className="data-item-label">Tipo de Documento</div>
-              <div className="data-item-value">{isEstudiante ? 'Certificado de Estudios' : 'Contrato Docente'}</div>
+              <div className="data-item-value">{isEstudiante ? 'Certificado de Estudiante' : 'Certificado de Docente'}</div>
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
               <div className="data-item-label">Programa / Curso</div>
               <div className="data-item-value">{programa}</div>
             </div>
-            {!isEstudiante && modulo && (
+            {!isEstudiante && doc.datosCursoPrograma?.rolDocente && (
               <div style={{ gridColumn: '1 / -1' }}>
-                <div className="data-item-label">Módulo Dictado</div>
-                <div className="data-item-value">{modulo}</div>
+                <div className="data-item-label">Rol desempeñado</div>
+                <div className="data-item-value">{doc.datosCursoPrograma.rolDocente}</div>
               </div>
             )}
             <div>
