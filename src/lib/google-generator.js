@@ -1,7 +1,7 @@
-import { drive, slides } from './google.js';
+import { requireGoogleClients } from './google.js';
 import { generateQRBuffer } from './qr-generator.js';
 
-async function uploadTemporaryQr(validationUrl, destinationFolderId) {
+async function uploadTemporaryQr(drive, validationUrl, destinationFolderId) {
   const qrBuffer = await generateQRBuffer(validationUrl);
   if (!qrBuffer) {
     throw new Error('No se pudo generar la imagen QR');
@@ -42,6 +42,7 @@ export async function generarCertificadoGoogle(
   nombreArchivo,
   { qrImageObjectId = null } = {}
 ) {
+  const { drive, slides } = requireGoogleClients();
   let newFileId = null;
   let temporaryQrFileId = null;
 
@@ -62,7 +63,7 @@ export async function generarCertificadoGoogle(
     const requests = [];
     for (const [key, value] of Object.entries(datos)) {
       if (key === 'QR') {
-        const temporaryQr = await uploadTemporaryQr(value, destinationFolderId);
+        const temporaryQr = await uploadTemporaryQr(drive, value, destinationFolderId);
         temporaryQrFileId = temporaryQr.fileId;
         const qrImageUrl = temporaryQr.imageUrl;
 

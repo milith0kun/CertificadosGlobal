@@ -62,7 +62,11 @@ export default function CrearCertificadoEstudiante() {
         alert('✅ Certificado emitido y descargado');
         router.push('/admin/certificados-estudiantes');
       } else {
-        alert('Guardado en BD, pero falló la generación del PDF. ¿Subiste el fondo a Drive?');
+        const errorData = await pdfRes.json().catch(() => ({}));
+        const errorMessage = errorData.action
+          ? `${errorData.error}\n\n${errorData.action}`
+          : errorData.error || 'No se pudo generar el PDF en el servidor.';
+        alert(`El certificado fue guardado, pero el PDF no se generó.\n\n${errorMessage}`);
         router.push('/admin/certificados-estudiantes');
       }
     } catch (err) {

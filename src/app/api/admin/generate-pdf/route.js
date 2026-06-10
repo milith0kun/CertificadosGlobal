@@ -84,6 +84,33 @@ export async function POST(request) {
 
   } catch (err) {
     console.error('Error generating PDF:', err);
-    return Response.json({ error: 'Error interno generando PDF' }, { status: 500 });
+    const message = err?.message || '';
+
+    if (err?.code === 'GOOGLE_AUTH_NOT_CONFIGURED' || message.includes('Google Drive no está configurado')) {
+      return Response.json({
+        error: 'Google Drive no está configurado en el servidor de producción.',
+        code: 'GOOGLE_AUTH_NOT_CONFIGURED',
+        action: 'Configura GOOGLE_REFRESH_TOKEN y las credenciales OAuth, o GOOGLE_SERVICE_ACCOUNT_JSON.',
+      }, { status: 503 });
+    }
+
+    if (err?.code === 403 || message.includes('permission') || message.includes('Permission')) {
+      return Response.json({
+        error: 'La cuenta de Google no tiene acceso a la plantilla o carpeta de destino.',
+        code: 'GOOGLE_DRIVE_PERMISSION_DENIED',
+      }, { status: 502 });
+    }
+
+    if (err?.code === 404) {
+      return Response.json({
+        error: 'No se encontró la plantilla o carpeta configurada en Google Drive.',
+        code: 'GOOGLE_DRIVE_RESOURCE_NOT_FOUND',
+      }, { status: 502 });
+    }
+
+    return Response.json({
+      error: 'Google Drive no pudo generar el PDF.',
+      code: 'PDF_GENERATION_FAILED',
+    }, { status: 500 });
   }
 }
