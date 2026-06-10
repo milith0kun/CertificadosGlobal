@@ -43,7 +43,7 @@ export async function POST(request) {
         HONORARIO: modulo.remuneracion || '',
         REMUNERACION: modulo.remuneracion || '',
         FECHA: new Date().toLocaleDateString('es-PE'),
-        QR: \`https://certificaciones.ecosdelseo.com/validar-certificado/\${doc.codigoContrato}\`
+        QR: `https://certificaciones.ecosdelseo.com/validar-certificado/${doc.codigoContrato}`
       };
     }
 
