@@ -43,3 +43,4 @@ fix-products.js
 migrate-data.js
 test-generator.js
 test-drive.js
+.env.production
